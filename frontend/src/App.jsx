@@ -4,6 +4,7 @@ import GraphView from './GraphView';
 function App() {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
   const [showGraph, setShowGraph] = useState(false);
   // Function to handle the decision button clicks
   const handleStatusUpdate = async (caseId, newStatus) => {
@@ -26,21 +27,55 @@ function App() {
     }
   };
 
-  // Fetch the alerts from your Python backend when the page loads
-  useEffect(() => {
+  // Reusable function to fetch alerts
+  const loadAlerts = () => {
     fetch('https://fintech-fraud-dashboard.onrender.com/api/alerts')
       .then((res) => res.json())
       .then((data) => {
-        if (data.status === 'success') {
-          setAlerts(data.data);
-        }
+        if (data.status === 'success') setAlerts(data.data);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Failed to fetch alerts:", err);
         setLoading(false);
       });
+  };
+
+  // Load alerts when the page first opens
+  useEffect(() => {
+    loadAlerts();
   }, []);
+
+  // Function to handle the file upload
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    
+    // Package the file exactly how FastAPI expects it
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('https://fintech-fraud-dashboard.onrender.com/upload-csv', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const data = await response.json();
+      if (data.status === 'success') {
+        alert(data.message); // Show a success popup
+        loadAlerts(); // Automatically refresh the dashboard!
+      }
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert("Failed to upload file.");
+    } finally {
+      setIsUploading(false);
+      event.target.value = null; // Reset the input
+    }
+  };
 
   // If the user clicked the button, hide the list and show the graph!
   if (showGraph) {
@@ -52,14 +87,31 @@ function App() {
       <div className="max-w-6xl mx-auto">
         
         {/* Header Section */}
-        <header className="mb-8 border-b border-gray-700 pb-4 flex justify-between items-end">
+        <header className="mb-8 border-b border-gray-700 pb-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>
             <h1 className="text-3xl font-bold text-blue-400">Fraud Detection Dashboard</h1>
             <p className="text-gray-400 mt-1">Review and investigate suspicious transactions.</p>
           </div>
-          <div className="bg-gray-800 px-4 py-2 rounded-lg shadow">
-            <span className="text-gray-400 text-sm">Total Alerts: </span>
-            <span className="text-xl font-bold text-red-400">{alerts.length}</span>
+          
+          {/* Right Side Stats & Upload */}
+          <div className="flex items-center gap-4">
+            
+            {/* The hidden file input wrapped in a beautiful Tailwind button label */}
+            <label className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors shadow-lg flex items-center gap-2 ${isUploading ? 'bg-gray-600 text-gray-300' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}>
+              {isUploading ? 'Processing...' : '+ Upload CSV'}
+              <input 
+                type="file" 
+                accept=".csv" 
+                className="hidden" 
+                onChange={handleFileUpload} 
+                disabled={isUploading} 
+              />
+            </label>
+
+            <div className="bg-gray-800 px-4 py-2 rounded-lg shadow border border-gray-700">
+              <span className="text-gray-400 text-sm">Total Alerts: </span>
+              <span className="text-xl font-bold text-red-400">{alerts.length}</span>
+            </div>
           </div>
         </header>
 

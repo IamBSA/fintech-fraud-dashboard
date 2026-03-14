@@ -8,7 +8,7 @@ function App() {
   // Function to handle the decision button clicks
   const handleStatusUpdate = async (caseId, newStatus) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/alerts/${caseId}`, {
+      const response = await fetch(`https://fintech-fraud-dashboard.onrender.com/api/alerts/${caseId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus, user_id: 'Analyst_1' })
@@ -28,7 +28,7 @@ function App() {
 
   // Fetch the alerts from your Python backend when the page loads
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/alerts')
+    fetch('https://fintech-fraud-dashboard.onrender.com/api/alerts')
       .then((res) => res.json())
       .then((data) => {
         if (data.status === 'success') {
@@ -135,7 +135,7 @@ function App() {
                     Investigate Graph
                   </button>
                 </div>
-                
+
               </div>
             ))}
           </div>

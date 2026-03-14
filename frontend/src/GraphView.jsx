@@ -8,7 +8,7 @@ export default function GraphView({ onBack }) {
 
   // Fetch the network data from the backend
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/network')
+    fetch('https://fintech-fraud-dashboard.onrender.com/api/network')
       .then((res) => res.json())
       .then((data) => {
         if (data.status === 'success') {

@@ -1,3 +1,4 @@
+import DashboardStats from './DashboardStats';
 import { useState, useEffect } from 'react';
 import { SignedIn, SignedOut, RedirectToSignIn, UserButton, useUser } from "@clerk/clerk-react";
 import './App.css';
@@ -146,6 +147,16 @@ function App() {
               </div>
             </header>
 
+            {/* --- NEW: Insert the Analytics Dashboard right here! --- */}
+            {alerts.length > 0 && <DashboardStats alerts={alerts} />}
+
+            {/* If there are no alerts, show a welcome message */}
+            {alerts.length === 0 && !loading && (
+              <div className="text-center py-12 bg-gray-800 rounded-lg border border-gray-700">
+                <p className="text-xl text-gray-400">No alerts found. Upload a CSV to get started.</p>
+              </div>
+            )}
+
             {/* Alerts List */}
             {loading ? (
               <p className="text-center text-gray-400 mt-20 text-lg animate-pulse">Loading alerts...</p>
@@ -180,7 +191,7 @@ function App() {
                           ))}
                         </ul>
                       </div>
-                      
+
                       {/* Analyst Notes Section */}
                       {canManageCases && alert.status === 'Pending' && (
                         <div className="mt-4 pt-4 border-t border-gray-700/50">

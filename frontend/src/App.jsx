@@ -102,27 +102,26 @@ function App() {
               <div>
                 <h1 className="text-3xl font-bold text-blue-400">Fraud Detection Dashboard</h1>
                 <p className="text-gray-400 mt-1">Review and investigate suspicious transactions.</p>
-             </div>
-          
-              {/* Right Side Stats & Upload */}
+              </div>
+              
+              {/* Right Side Stats, Upload, and User Profile */}
               <div className="flex items-center gap-4">
-
-                {/* The hidden file input wrapped in a beautiful Tailwind button label */}
+                
                 <label className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors shadow-lg flex items-center gap-2 ${isUploading ? 'bg-gray-600 text-gray-300' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}>
                   {isUploading ? 'Processing...' : '+ Upload CSV'}
-                  <input 
-                    type="file" 
-                    accept=".csv" 
-                    className="hidden" 
-                    onChange={handleFileUpload} 
-                    disabled={isUploading} 
-                  />
+                  <input type="file" accept=".csv" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
                 </label>
 
                 <div className="bg-gray-800 px-4 py-2 rounded-lg shadow border border-gray-700">
                   <span className="text-gray-400 text-sm">Total Alerts: </span>
                   <span className="text-xl font-bold text-red-400">{alerts.length}</span>
                 </div>
+
+                {/* THE MISSING PIECE: The Clerk User Profile Avatar */}
+                <div className="ml-2 pl-4 border-l border-gray-700">
+                  <UserButton afterSignOutUrl="/" />
+                </div>
+                
               </div>
             </header>
 

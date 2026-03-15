@@ -5,7 +5,17 @@ import GraphView from './GraphView';
 
 function App() {
   const [alerts, setAlerts] = useState([]);
+
   const { user } = useUser();
+  
+  // Grab the role from Clerk, default to 'customer' if they don't have one
+  const userRole = user?.publicMetadata?.role || 'customer'; 
+  
+  // Define what this user is allowed to do
+  const canUploadData = userRole === 'admin';
+  const canManageCases = userRole === 'admin' || userRole === 'analyst';
+  const isSupport = userRole === 'customer_support';
+
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [showGraph, setShowGraph] = useState(false);
@@ -107,10 +117,13 @@ function App() {
               {/* Right Side Stats, Upload, and User Profile */}
               <div className="flex items-center gap-4">
                 
-                <label className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors shadow-lg flex items-center gap-2 ${isUploading ? 'bg-gray-600 text-gray-300' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}>
-                  {isUploading ? 'Processing...' : '+ Upload CSV'}
-                  <input type="file" accept=".csv" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
-                </label>
+                {/* Only Admins can upload new system data */}
+                {canUploadData && (
+                  <label className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors shadow-lg flex items-center gap-2 ${isUploading ? 'bg-gray-600 text-gray-300' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}>
+                    {isUploading ? 'Processing...' : '+ Upload CSV'}
+                   <input type="file" accept=".csv" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
+                 </label>
+                )}
 
                 <div className="bg-gray-800 px-4 py-2 rounded-lg shadow border border-gray-700">
                   <span className="text-gray-400 text-sm">Total Alerts: </span>
@@ -161,37 +174,33 @@ function App() {
                       </div>
                     </div>
                       
-                    {/* Right Side: Actions */}
-                    <div className="flex flex-col gap-2 w-full md:w-auto min-w-[150px]">
-
-                      {/* Show decision buttons ONLY if the status is Pending */}
-                      {alert.status === 'Pending' ? (
-                        <>
-                          <button 
-                            onClick={() => handleStatusUpdate(alert.case_id, 'True Fraud')}
-                            className="bg-red-900/50 hover:bg-red-600 text-red-200 border border-red-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors w-full"
-                          >
-                            ✓ True Fraud
-                          </button>
-                          <button 
-                            onClick={() => handleStatusUpdate(alert.case_id, 'Not Fraud')}
-                            className="bg-green-900/50 hover:bg-green-600 text-green-200 border border-green-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors w-full"
-                          >
-                            ✕ Not Fraud
-                          </button>
-                        </>
+                    {/* Action Buttons based on Role */}
+                    <div className="flex flex-col gap-2 min-w-[140px]">
+                      {canManageCases ? (
+                        // Admins and Analysts see the action buttons
+                        alert.status === 'Pending' ? (
+                          <>
+                            <button onClick={() => handleStatusUpdate(alert.id, 'True Fraud')} className="px-4 py-2 bg-red-900/50 hover:bg-red-800 text-red-200 rounded text-sm border border-red-700 transition-colors">
+                              ✓ True Fraud
+                            </button>
+                            <button onClick={() => handleStatusUpdate(alert.id, 'Not Fraud')} className="px-4 py-2 bg-green-900/50 hover:bg-green-800 text-green-200 rounded text-sm border border-green-700 transition-colors">
+                              ✕ Not Fraud
+                            </button>
+                          </>
+                        ) : (
+                          <div className={`px-4 py-2 rounded border text-center text-sm font-medium ${alert.status === 'True Fraud' ? 'bg-red-900/20 text-red-400 border-red-800' : 'bg-green-900/20 text-green-400 border-green-800'}`}>
+                            Status: {alert.status}
+                          </div>
+                        )
                       ) : (
-                        /* If a decision was made, show a permanent badge instead */
-                        <div className={`px-4 py-2 rounded-lg text-sm font-bold text-center border ${alert.status === 'True Fraud' ? 'bg-red-900/20 border-red-500 text-red-400' : 'bg-green-900/20 border-green-500 text-green-400'}`}>
-                          Status: {alert.status}
+                        // Customer Support just sees a read-only badge
+                        <div className="px-4 py-2 rounded border border-gray-700 bg-gray-800 text-gray-400 text-center text-sm font-medium italic">
+                          Read-Only View
                         </div>
                       )}
 
-                      {/* The Graph Button stays visible always */}
-                      <button 
-                        onClick={() => setShowGraph(true)}
-                        className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 mt-2 rounded-lg text-sm font-medium transition-colors w-full shadow-lg"
-                      >
+                      {/* Everyone can see the graph */}
+                      <button onClick={() => setShowGraph(true)} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium transition-colors">
                         Investigate Graph
                       </button>
                     </div>

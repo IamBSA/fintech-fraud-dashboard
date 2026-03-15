@@ -7,16 +7,20 @@ function App() {
   const [alerts, setAlerts] = useState([]);
 
   const { user } = useUser();
-  
   // Grab the role from Clerk, default to 'customer' if they don't have one
   const userRole = user?.publicMetadata?.role || 'customer'; 
-  
   // Define what this user is allowed to do
   const canUploadData = userRole === 'admin';
   const canManageCases = userRole === 'admin' || userRole === 'analyst';
   const isSupport = userRole === 'customer_support';
 
   const [loading, setLoading] = useState(true);
+
+  const [notes, setNotes] = useState({});
+  const handleNoteChange = (alertId, text) => {
+    setNotes(prev => ({ ...prev, [alertId]: text }));
+  };
+
   const [isUploading, setIsUploading] = useState(false);
   const [showGraph, setShowGraph] = useState(false);
   // Function to handle the decision button clicks
@@ -25,7 +29,11 @@ function App() {
       const response = await fetch(`https://fintech-fraud-dashboard.onrender.com/api/alerts/${caseId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus, user_id: user.fullName || user.primaryEmailAddress.emailAddress })
+        body: JSON.stringify({ 
+          status: newStatus, 
+          user_id: user?.fullName || user?.primaryEmailAddress?.emailAddress || 'Unknown User',
+          note: notes[caseId] || "" // <-- NEW: Send the note if one exists!
+        })
       });
 
       const data = await response.json();
@@ -172,6 +180,19 @@ function App() {
                           ))}
                         </ul>
                       </div>
+                      
+                      {/* Analyst Notes Section */}
+                      {canManageCases && alert.status === 'Pending' && (
+                        <div className="mt-4 pt-4 border-t border-gray-700/50">
+                          <textarea 
+                            placeholder="Add investigation notes before making a decision..."
+                            className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-sm text-gray-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none"
+                            rows="2"
+                            value={notes[alert.id] || ''}
+                            onChange={(e) => handleNoteChange(alert.id, e.target.value)}
+                          />
+                        </div>
+                      )}
                     </div>
                       
                     {/* Action Buttons based on Role */}

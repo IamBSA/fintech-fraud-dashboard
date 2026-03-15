@@ -16,7 +16,8 @@ import io
 # Data model for updating an alert
 class StatusUpdate(BaseModel):
     status: str
-    user_id: str = "Analyst_1" # Hardcoded for now until we add real login
+    user_id: str
+    note: str = ""
 
 # Load environment variables
 load_dotenv()
@@ -225,12 +226,12 @@ def update_alert_status(case_id: int, data: StatusUpdate):
     try:
         cursor = conn.cursor()
 
-        # 1. Update the alert status
+        # 1. Update the alert status AND the note
         cursor.execute("""
             UPDATE alerts 
-            SET status = %s 
+            SET status = %s, note = %s
             WHERE case_id = %s;
-        """, (data.status, case_id))
+        """, (data.status, data.note, case_id))
 
         # 2. Write to the immutable Audit Log
         action_text = f"Changed status to: {data.status}"

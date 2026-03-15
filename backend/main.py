@@ -248,3 +248,31 @@ def update_alert_status(case_id: int, data: StatusUpdate):
     finally:
         if 'cursor' in locals(): cursor.close()
         if 'conn' in locals(): conn.close()
+
+@app.get("/api/transactions")
+def get_all_transactions():
+    """Fetches the raw transaction ledger for the data table."""
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    
+    try:
+        cursor = conn.cursor()
+        # We limit to 500 so we don't crash the browser if you upload a massive CSV!
+        cursor.execute("""
+            SELECT transaction_id, sender_id, receiver_id, amount, device_id, ip_address
+            FROM transactions
+            ORDER BY transaction_id DESC
+            LIMIT 500;
+        """)
+        
+        columns = [desc[0] for desc in cursor.description]
+        transactions = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        
+        return {"status": "success", "data": transactions}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching transactions: {str(e)}")
+    finally:
+        if 'cursor' in locals(): cursor.close()
+        if 'conn' in locals(): conn.close()

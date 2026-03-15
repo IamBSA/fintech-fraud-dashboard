@@ -1,3 +1,4 @@
+import TransactionsTable from './TransactionsTable';
 import DashboardStats from './DashboardStats';
 import { useState, useEffect } from 'react';
 import { SignedIn, SignedOut, RedirectToSignIn, UserButton, useUser } from "@clerk/clerk-react";
@@ -16,6 +17,8 @@ function App() {
   const isSupport = userRole === 'customer_support';
 
   const [loading, setLoading] = useState(true);
+
+  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' or 'ledger'
 
   const [notes, setNotes] = useState({});
   const handleNoteChange = (alertId, text) => {
@@ -121,6 +124,21 @@ function App() {
               <div>
                 <h1 className="text-3xl font-bold text-blue-400">Fraud Detection Dashboard</h1>
                 <p className="text-gray-400 mt-1">Review and investigate suspicious transactions.</p>
+                {/* Navigation Tabs */}
+                <div className="mt-4 flex gap-4">
+                  <button 
+                    onClick={() => setActiveTab('dashboard')} 
+                    className={`pb-2 font-medium transition-colors ${activeTab === 'dashboard' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
+                  >
+                    Alerts Dashboard
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('ledger')} 
+                    className={`pb-2 font-medium transition-colors ${activeTab === 'ledger' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
+                  >
+                    Master Ledger
+                  </button>
+                </div>
               </div>
               
               {/* Right Side Stats, Upload, and User Profile */}
@@ -146,6 +164,15 @@ function App() {
                 
               </div>
             </header>
+
+            {/* --- RENDER THE LEDGER TAB --- */}
+            {activeTab === 'ledger' && (
+              <TransactionsTable userRole={userRole} />
+            )}
+
+            {/* --- RENDER THE DASHBOARD TAB --- */}
+            {activeTab === 'dashboard' && (
+              <>
 
             {/* --- NEW: Insert the Analytics Dashboard right here! --- */}
             {alerts.length > 0 && <DashboardStats alerts={alerts} />}
@@ -239,6 +266,8 @@ function App() {
                   </div>
                 ))}
               </div>
+            )}
+            </>
             )}
           </div>
         </div>

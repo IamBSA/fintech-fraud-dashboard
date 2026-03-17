@@ -37,6 +37,27 @@ A full-stack, cloud-hosted enterprise application designed to ingest financial t
 4. **Analysis:** The Rules Engine evaluates the data and generates a `risk_score`.
 5. **Action:** High-risk transactions trigger alerts, which are surfaced in real-time to the Analyst Dashboard for review.
 
+## 📸 System Walkthrough
+
+### 1. Analyst Dashboard & Alert Management
+Real-time tracking of systemic risk, total alerts, and value at risk. Analysts can review AI-flagged transactions, read specific rule-violation reasons, and add investigative notes before classifying a case as True Fraud.
+<img width="1920" height="1080" alt="dashboard1" src="https://github.com/user-attachments/assets/845369d4-bcf2-436c-be4c-66ad6be67ed7" />
+
+<img width="1920" height="1080" alt="dashboard2" src="https://github.com/user-attachments/assets/f44ccfef-2ebb-4abd-8f23-d878a73f1265" />
+
+### 2. Transaction Provenance Graph
+A visual node-network representation of transaction flows. This allows analysts to untangle complex fraud rings, circular money movements, and shared-device anomalies that traditional tables miss.
+<img width="1920" height="1080" alt="graph" src="https://github.com/user-attachments/assets/fbec2899-6354-4e7b-9fad-58303c2d31b8" />
+
+### 3. Master Transaction Ledger
+A fully searchable, paginated, and secure database view of all historical system transactions, allowing Customer Support and Admins to quickly locate specific Account IDs or IPs.
+<img width="1920" height="1080" alt="ledger" src="https://github.com/user-attachments/assets/77bf7b43-2f2b-4ebc-9412-5e0f265e5853" />
+
+### 4. Automated Cloud Archival (AWS S3)
+Raw financial data is automatically and immutably backed up to an Amazon S3 bucket upon ingestion, ensuring compliance and data resilience before the rules engine even touches the information.
+<img width="1920" height="1080" alt="awsS3" src="https://github.com/user-attachments/assets/bcabd32e-8f01-4b8d-8589-d9740ea3847b" />
+
+
 ## 👨‍💻 Author
 **Balendhu S Ajay (BSA)**
 *M.Tech in Artificial Intelligence & Data Science* | *IIT Dhanbad*

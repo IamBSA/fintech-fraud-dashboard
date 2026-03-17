@@ -1,3 +1,7 @@
+import boto3
+import os
+import uuid
+
 from pydantic import BaseModel
 
 import random
@@ -51,8 +55,32 @@ async def upload_csv(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Invalid file format. Please upload a CSV.")
 
     try:
-        # Read the file content into a Pandas DataFrame
+        # Read the file content
         contents = await file.read()
+        
+        # ---------------------------------------------------------
+        # NEW: AWS S3 BACKUP
+        # ---------------------------------------------------------
+        try:
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=os.environ.get("AWS_ACCESS_KEY"),
+                aws_secret_access_key=os.environ.get("AWS_SECRET_KEY")
+            )
+            # Create a unique filename for the archive
+            file_key = f"archive/{uuid.uuid4().hex[:8]}-{file.filename}"
+            
+            s3.put_object(
+                Bucket="fintech-fraud-archive-2026",
+                Key=file_key,
+                Body=contents
+            )
+            print(f"✅ CSV successfully backed up to S3: {file_key}")
+        except Exception as e:
+            print(f"⚠️ S3 Backup failed (continuing to DB): {str(e)}")
+        # ---------------------------------------------------------
+
+        # Process the DataFrame row by row
         df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
         
         # Open database connection
@@ -66,7 +94,6 @@ async def upload_csv(file: UploadFile = File(...)):
         accounts_inserted = 0
         transactions_inserted = 0
 
-        # Process the DataFrame row by row
         # Process the DataFrame row by row
         for _, row in df.iterrows():
             tx_id = str(row['transaction_id'])
@@ -97,13 +124,12 @@ async def upload_csv(file: UploadFile = File(...)):
             transactions_inserted += 1
 
             # ---------------------------------------------------------
-            # NEW: PHASE 3 - PASS THROUGH THE RULES ENGINE
+            # PHASE 3 - PASS THROUGH THE RULES ENGINE
             # ---------------------------------------------------------
             risk_score, reasons = evaluate_transaction_rules(amount, device)
 
             # If the transaction triggered any rules, create a Fraud Alert!
             if risk_score > 0:
-                # Convert the reasons list to JSON for the database
                 reasons_json = json.dumps(reasons)
                 
                 cursor.execute("""

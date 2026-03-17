@@ -3,8 +3,8 @@
 A full-stack, cloud-hosted enterprise application designed to ingest financial transaction data, detect suspicious activity using rule-based algorithms, and provide an interactive workspace for fraud analysts.
 
 ## 🚀 Live Demo
-* **Frontend:** [Insert your Vercel URL here]
-* **Backend API:** [Insert your Render URL here]
+* **Frontend:** https://fintech-fraud-dashboard.vercel.app/
+* **Backend API:** https://fintech-fraud-dashboard.onrender.com
 
 ## ✨ Key Features
 * **Role-Based Access Control (RBAC):** Secure authentication powered by Clerk, featuring tailored views for Admins, Analysts, Customer Support, and Customers.
